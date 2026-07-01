@@ -4,7 +4,7 @@ import torch
 from PIL import Image
 from torchvision import transforms
 
-from model import build_model
+from src.model import build_model
 
 
 MODEL_PATH = Path("models/resnet18_blood_cell_classifier.pth")
