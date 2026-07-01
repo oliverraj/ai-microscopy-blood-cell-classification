@@ -13,10 +13,8 @@ from sklearn.metrics import (
     classification_report,
     confusion_matrix,
 )
-
-from dataset import create_dataloaders
-from model import build_model
-
+from src.dataset import create_dataloaders
+from src.model import build_model
 
 MODEL_PATH = Path("models/resnet18_blood_cell_classifier.pth")
 REPORT_DIR = Path("reports")

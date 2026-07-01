@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 
-from inference import load_trained_model, preprocess_image
+from src.inference import load_trained_model, preprocess_image
 
 
 SAMPLE_IMAGE = Path("data/raw/bloodcells_dataset/neutrophil/BNE_358773.jpg")
@@ -37,9 +37,6 @@ class GradCAM:
         score = output[0, predicted_idx]
         score.backward()
 
-        if self.gradients is None:
-            raise RuntimeError("Gradients were not captured. Check target layer.")
-
         weights = self.gradients.mean(dim=(2, 3), keepdim=True)
         cam = (weights * self.activations).sum(dim=1).squeeze()
         cam = torch.relu(cam).detach().cpu().numpy()
@@ -47,7 +44,7 @@ class GradCAM:
         cam = cv2.resize(cam, (224, 224))
         cam = (cam - cam.min()) / (cam.max() - cam.min() + 1e-8)
 
-        return cam, predicted_idx.item(), confidence.item()
+        return cam, predicted_idx.item(), confidence.item(), probabilities.detach().cpu().numpy()
 
 
 def overlay_heatmap(original_image, cam):
@@ -62,43 +59,61 @@ def overlay_heatmap(original_image, cam):
     return original_array, heatmap, overlay
 
 
-def main():
-    # Force CPU for Grad-CAM to avoid MPS hook issues
+def generate_gradcam(image_path):
     device = torch.device("cpu")
     model, class_names, _ = load_trained_model(device=device)
 
-    # Enable gradients for Grad-CAM visualization
     for parameter in model.parameters():
         parameter.requires_grad = True
 
     model.eval()
 
-    original_image, input_tensor = preprocess_image(SAMPLE_IMAGE)
+    original_image, input_tensor = preprocess_image(image_path)
     input_tensor = input_tensor.to(device)
 
     target_layer = model.layer4[-1].conv2
     gradcam = GradCAM(model, target_layer)
 
-    cam, predicted_idx, confidence = gradcam.generate(input_tensor)
+    cam, predicted_idx, confidence, probabilities = gradcam.generate(input_tensor)
+
     original_array, heatmap, overlay = overlay_heatmap(original_image, cam)
 
-    predicted_class = class_names[predicted_idx]
+    result = {
+        "predicted_class": class_names[predicted_idx],
+        "confidence": confidence,
+        "probabilities": {
+            class_names[i]: float(probabilities[i])
+            for i in range(len(class_names))
+        },
+        "original": original_array,
+        "heatmap": heatmap,
+        "overlay": overlay,
+    }
+
+    return result
+
+
+def main():
+    result = generate_gradcam(SAMPLE_IMAGE)
 
     plt.figure(figsize=(12, 4))
 
     plt.subplot(1, 3, 1)
-    plt.imshow(original_array)
+    plt.imshow(result["original"])
     plt.title("Original Image")
     plt.axis("off")
 
     plt.subplot(1, 3, 2)
-    plt.imshow(heatmap)
+    plt.imshow(result["heatmap"])
     plt.title("Grad-CAM Heatmap")
     plt.axis("off")
 
     plt.subplot(1, 3, 3)
-    plt.imshow(overlay)
-    plt.title(f"Prediction: {predicted_class}\nConfidence: {confidence:.2%}")
+    plt.imshow(result["overlay"])
+    plt.title(
+        f"Prediction: {result['predicted_class']}\n"
+        f"Confidence: {result['confidence']:.2%}"
+    )
     plt.axis("off")
 
     plt.tight_layout()
@@ -106,8 +121,8 @@ def main():
     plt.close()
 
     print("Grad-CAM completed.")
-    print(f"Predicted class: {predicted_class}")
-    print(f"Confidence: {confidence:.4f}")
+    print(f"Predicted class: {result['predicted_class']}")
+    print(f"Confidence: {result['confidence']:.4f}")
     print("Saved figure: reports/figures/gradcam_example.png")
 
 

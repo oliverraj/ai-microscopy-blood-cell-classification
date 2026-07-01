@@ -7,8 +7,8 @@ import torch.optim as optim
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from dataset import create_dataloaders
-from model import build_model
+from src.dataset import create_dataloaders
+from src.model import build_model
 
 
 MODEL_DIR = Path("models")
