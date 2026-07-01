@@ -1,0 +1,6 @@
+ResNet18 Blood Cell Classifier Evaluation
+=============================================
+Accuracy:  0.8093
+Precision: 0.8375
+Recall:    0.7668
+Macro F1:  0.7837
