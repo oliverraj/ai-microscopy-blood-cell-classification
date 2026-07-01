@@ -155,6 +155,50 @@ Validation Results
 The model demonstrates strong classification performance across eight blood cell categories using transfer learning.
 
 ---
+# Interactive Application
+
+The project includes an interactive Streamlit application that enables users to upload microscopy images, classify blood cell types, review prediction confidence, and visualize Grad-CAM explanations.
+
+### Application Interface
+
+![Streamlit Demo 1](reports/figures/streamlit_demo1.png)
+
+### Prediction and Explainability
+
+![Streamlit Demo 2](reports/figures/streamlit_demo2.png)
+
+## Visual Outputs
+
+### Dataset Class Distribution
+
+![Class Distribution](reports/figures/class_distribution.png)
+
+Distribution of the eight blood cell classes used for model training.
+
+### Sample Blood Cell Images
+
+![Sample Images](reports/figures/sample_images_by_class.png)
+
+Representative microscopy images from each blood cell category.
+
+### OpenCV Preprocessing Pipeline
+
+![OpenCV Pipeline](reports/figures/opencv_pipeline.png)
+
+Image preprocessing workflow including grayscale conversion, histogram equalization, CLAHE, thresholding, and edge detection.
+
+### Confusion Matrix
+
+![Confusion Matrix](reports/figures/confusion_matrix_resnet18.png)
+
+Confusion matrix summarizing model performance across all eight classes.
+
+### Grad-CAM Explainability
+
+![GradCAM](reports/figures/gradcam_example.png)
+
+Grad-CAM visualization highlighting image regions that most influenced the prediction.
+---
 
 ## Explainable AI (Grad-CAM)
 
